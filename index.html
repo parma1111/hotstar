@@ -1,0 +1,177 @@
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>clusure</title>
+</head>
+<style>
+    #movie {
+        height: 35px;
+        width: 400px;
+        margin-left: 36.6%;
+        font-size: 25px;
+        border: 1px solid black;
+        border-radius: 25px;
+        margin-bottom: 12px;
+        padding: 10px;
+    }
+    
+    #movies {
+        /* border: 2px solid green; */
+        overflow-x: auto;
+        height: 300px;
+        width: 400px;
+        margin: auto;
+    }
+    
+    #movies>div>img {
+        height: 100px;
+        width: 100px;
+    }
+    
+    #movies>div {
+        height: 100px;
+        width: 200px;
+        border: 1px solid black;
+        display: flex;
+        width: 100%;
+    }
+    
+    #movies_result {
+        height: 400px;
+        width: 50%;
+        border: 1px solid black;
+        margin: auto;
+        display: flex;
+    }
+    
+    #movies_result>div {
+        text-align: center;
+    }
+    
+    h1 {
+        color: red;
+    }
+    
+    a {
+        font-size: 25px;
+        text-decoration: none;
+        margin-left: 200px;
+        background-color: aqua;
+        padding: 15px;
+        border-radius: 25px;
+    }
+</style>
+
+<body>
+    <input oninput="debounce(searchMovie,1000)" type="text" placeholder="Search Movie " id="movie">
+    <a href="./trending.html">GO To Trending Movies</a>
+    <div id="movies"></div>
+    <div id="movies_result"></div>
+
+</body>
+
+</html>
+<script>
+    // data featch vala function
+
+    let movie_div = document.getElementById("movies")
+    let movie_waiting;
+    async function searchMovie() {
+        try {
+            let movie = document.getElementById("movie").value;
+            if (movie.length <= 2) {
+                return false;
+            }
+            let response = await fetch(`http://www.omdbapi.com/?apikey=287da6e2&s=${movie}`);
+            let data = await response.json();
+            // console.log(data)
+            let movies_arr = data.Search;
+            appenMovies(movies_arr)
+            console.log("data:", data)
+        } catch (err) {
+            console.log("err:", err)
+        }
+
+    }
+
+
+
+    //  appendinga vala function 
+    function appenMovies(movies) {
+        movie_div.innerHTML = null;
+        movies.forEach(function(element) {
+            let div = document.createElement("div");
+            let p = document.createElement("h3");
+            let pics = document.createElement("img");
+
+            var objmovie = {
+                pics: element.Poster,
+                p: element.Title,
+                Year_Of_release: element.Year,
+                imdbID: element.imdbID
+            }
+            div.addEventListener("click", () => {
+                selectData(objmovie);
+
+            })
+            pics.src = element.Poster;
+            p.innerText = element.Title;
+            div.append(pics, p)
+            movie_div.append(div);
+        });
+    }
+
+    let main = document.getElementById("movies_result")
+
+    function selectData(data) {
+        localStorage.setItem("MOVIESDATABASE", JSON.stringify(data));
+        showResults(data)
+    }
+
+
+    let local_data = JSON.parse(localStorage.getItem('MOVIESDATABASE')) || [];
+    showResults(local_data)
+
+    function showResults(data) {
+        main.innerHTML = "";
+        let div = document.createElement("div");
+        let photo = document.createElement("img");
+        let Title = document.createElement("h1")
+        let Relase = document.createElement("h2")
+        let imdbID = document.createElement("h2")
+
+        imdbID.innerText = `IMDB-ID:--${data.imdbID}`
+        Relase.innerText = `Year_Of_release:--${data.Year_Of_release}`
+        Title.innerText = `Title:--${data.p}`
+        photo.setAttribute("src", data.pics);
+
+        div.append(Title, Relase, imdbID)
+        main.append(photo, div)
+
+
+    }
+
+
+
+
+    // debouncing 
+    function heelo() {
+        var p = document.querySelector("p").innerText
+        console.log(p)
+    }
+
+    function debounce(func, delay) {
+        if (movie_waiting === true) {
+            clearTimeout(movie_waiting);
+        }
+        movie_waiting = setTimeout(function() {
+            func();
+        }, delay);
+
+    }
+</script>
